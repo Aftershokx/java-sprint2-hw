@@ -45,8 +45,6 @@ public interface TaskManager {
 
     void updateSubTask (SubTask subTask);                                   //Замена подзадачи
 
-    int updateId ();                                                 //Счетчик
-
     ArrayList<Task> history ();                                          //Получение истории
 
 }

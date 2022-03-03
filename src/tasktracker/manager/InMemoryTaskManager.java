@@ -9,13 +9,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class InMemoryTaskManager implements TaskManager{
+public class InMemoryTaskManager implements TaskManager {
     int uniId = 0;
     private final HistoryManager historyManager = Managers.getDefaultHistory ();
     private final HashMap<Integer, EpicTask> epicTasks = new HashMap<> ();
     private final HashMap<Integer, SubTask> subTasks = new HashMap<> ();
     private final HashMap<Integer, Task> tasks = new HashMap<> ();
 
+
+    public int updateId () {                                                  //Счетчик
+        int updatedId = uniId + 1;
+        uniId = updatedId;
+        return updatedId;
+    }
 
     @Override
     public ArrayList<EpicTask> getEpicTasks () {                  //Распаковка мапы эпиков
@@ -159,13 +165,6 @@ public class InMemoryTaskManager implements TaskManager{
                 prevEpic.updateEpicStatus ();
             }
         }
-    }
-
-    @Override
-    public int updateId () {                                                  //Счетчик
-        int updatedId = uniId + 1;
-        uniId = updatedId;
-        return updatedId;
     }
 
     @Override
