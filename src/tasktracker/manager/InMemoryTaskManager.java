@@ -7,6 +7,7 @@ import tasktracker.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class InMemoryTaskManager implements TaskManager {
@@ -118,6 +119,7 @@ public class InMemoryTaskManager implements TaskManager {
             if (prevEpic != null) {
                 prevEpic.removeSubtask (subTask);
                 subTasks.remove (id);
+                historyManager.remove (id);
             }
         }
     }
@@ -127,6 +129,7 @@ public class InMemoryTaskManager implements TaskManager {
         Task task = searchTaskWithId (id);
         if(task!=null) {
             tasks.remove (id);
+            historyManager.remove (id);
         }
     }
 
@@ -138,6 +141,7 @@ public class InMemoryTaskManager implements TaskManager {
                 removeSubTaskWithId (subTask);
             }
             epicTasks.remove (id);
+            historyManager.remove (id);
         }
     }
 
@@ -168,8 +172,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Task> history() {                                      // Получение списка истории
-        return historyManager.getHistory();
+    public List<Task> history () {                                      // Получение списка истории
+        return historyManager.getHistory ();
     }
 }
 

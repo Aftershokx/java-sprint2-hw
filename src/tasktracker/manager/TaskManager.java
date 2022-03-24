@@ -5,6 +5,7 @@ import tasktracker.tasks.SubTask;
 import tasktracker.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public interface TaskManager {
@@ -45,7 +46,7 @@ public interface TaskManager {
 
     void updateSubTask (SubTask subTask);                                   //Замена подзадачи
 
-    ArrayList<Task> history ();                                          //Получение истории
+    List<Task> history ();                                          //Получение истории
 
 }
 
