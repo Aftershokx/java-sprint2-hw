@@ -50,16 +50,16 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void remove (int id) {                                                        //Удаление задачи из истории
-        removeNode (history.get (id));
+        if (history.containsKey (id)) {
+            removeNode (history.get (id));
+            history.remove (id);
+        }
     }
 
     @Override
     public void add (Task task) {                                                         //Добавление задач в историю
         if (task == null) {
             return;
-        }
-        if (history.size () >= 10) {
-            remove (10);
         }
         linkLast (task);
     }
