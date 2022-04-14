@@ -7,6 +7,7 @@ public class Task {
     private String description;
     private Status status;
     private int identifier;
+    private Types type;
 
     public Task(String name, String description, Status status) {
         this.name = name;
@@ -39,23 +40,31 @@ public class Task {
         this.name = name;
     }
 
-    public void setDescription(String description) {
+    public void setDescription (String description) {
         this.description = description;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus (Status status) {
         this.status = status;
     }
 
-    public void setIdentifier(int identifier) {
+    public void setType (Types type) {
+        this.type = type;
+    }
+
+    public Types getType () {
+        return type;
+    }
+
+    public void setIdentifier (int identifier) {
         this.identifier = identifier;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals (Object obj) {
         if (this == obj) return true;
         if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
+        if (this.getClass () != obj.getClass ()) return false;
         Task otherTask = (Task) obj;
         return Objects.equals(name, otherTask.name) &&
                 Objects.equals(description, otherTask.description) && Objects.equals(status, otherTask.status) &&

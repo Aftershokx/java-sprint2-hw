@@ -1,9 +1,6 @@
 package tasktracker.manager;
 
-import tasktracker.tasks.EpicTask;
-import tasktracker.tasks.Status;
-import tasktracker.tasks.SubTask;
-import tasktracker.tasks.Task;
+import tasktracker.tasks.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,10 +9,10 @@ import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
     int uniId = 0;
-    private final HistoryManager historyManager = Managers.getDefaultHistory ();
-    private final HashMap<Integer, EpicTask> epicTasks = new HashMap<> ();
-    private final HashMap<Integer, SubTask> subTasks = new HashMap<> ();
-    private final HashMap<Integer, Task> tasks = new HashMap<> ();
+    protected static final HistoryManager historyManager = Managers.getDefaultHistory ();
+    protected static final HashMap<Integer, EpicTask> epicTasks = new HashMap<> ();
+    protected static final HashMap<Integer, SubTask> subTasks = new HashMap<> ();
+    protected static final HashMap<Integer, Task> tasks = new HashMap<> ();
 
 
     public int updateId () {                                                  //Счетчик
@@ -42,6 +39,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createEpicTask (EpicTask epicTask) {                                 //создание Эпика
         if (epicTask != null) {
+            epicTask.setType (Types.EPIC_TASK);
             epicTask.updateEpicStatus ();
             if (epicTask.getStatus () == Status.NEW) {
                 epicTask.setIdentifier (updateId ());
@@ -53,10 +51,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createSubTask (SubTask subTask) {                                   //Создание подзадач
         if (subTask != null) {
+            subTask.setType (Types.SUBTASK);
             EpicTask prevEpic = searchEpicWithId (subTask.getEpicIdentifier ());
             if (prevEpic != null) {
                 if (subTask.getStatus () == Status.NEW) {
                     subTask.setIdentifier (updateId ());
+
                 }
                 prevEpic.addSubtask (subTask);
                 subTasks.put (subTask.getIdentifier (), subTask);
@@ -67,6 +67,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void createTask (Task task) {                                            //Создание задач
         if (task != null) {
+            task.setType (Types.TASK);
             if (task.getStatus () == Status.NEW) {
                 task.setIdentifier (updateId ());
             }

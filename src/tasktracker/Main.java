@@ -11,7 +11,6 @@ import tasktracker.tasks.Task;
 public class Main {
     public static void main(String[] args) {
         TaskManager manager = Managers.getDefault ();
-
         Task firstTask = new Task ("1000 steps", "need to walk 1000 steps around the neighborhood", Status.NEW);
         manager.createTask (firstTask);                          //Создание 1й задачи
         Task secondTask = new Task ("3000 steps", "need to walk 3000 steps around the neighborhood", Status.NEW);
@@ -47,6 +46,7 @@ public class Main {
         System.out.println (manager.history ());              //Вывожу историю просмотров
         manager.removeEpicTaskWithId (3);                     //Удаляю эпик, в котором было 3 подзадачи
         System.out.println (manager.history ());              //Вывожу историю просмотров
+
     }
 
 }
