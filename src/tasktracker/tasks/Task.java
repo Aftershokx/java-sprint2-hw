@@ -1,5 +1,7 @@
 package tasktracker.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -8,11 +10,38 @@ public class Task {
     private Status status;
     private int identifier;
     private Types type;
+    private Duration duration;
+    private LocalDateTime startTime;
 
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
         this.status = status;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime () {
+        if (getStartTime() == null) {
+            return null;
+        }
+        return getStartTime().plus(getDuration());
+    }
+
+    public void setDuration(long durationOfMinuts) {
+        this.duration = Duration.ofMinutes(durationOfMinuts);
+    }
+
+    public void setStartTime(String startTime) {
+        if (!startTime.equals("null")) {
+            this.startTime = LocalDateTime.parse(startTime);
+        }
     }
 
     public Task(String name, String description) {

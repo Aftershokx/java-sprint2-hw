@@ -1,5 +1,7 @@
 package tasktracker.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 
@@ -52,25 +54,63 @@ public class EpicTask extends Task {
 
         if (stateNew == getSubTasksIds().size()) {
             status = Status.NEW;
-        } else if (stateDone == getSubTasksIds().size()) {
+        } else if (stateDone == getSubTasksIds ().size ()) {
             status = Status.DONE;
         } else {
             status = Status.IN_PROGRESS;
         }
 
-        setStatus(status);
+        setStatus (status);
 
     }
 
+    @Override
+    public Duration getDuration () {
+        if (getStartTime () == null) {
+            return Duration.ZERO;
+        }
+        LocalDateTime lastSubEndTime = LocalDateTime.MIN;
+        for (SubTask subtask : getSubTasks ()) {
+            if (subtask.getStartTime () == null) {
+                break;
+            }
+            if (subtask.getEndTime ().isAfter (lastSubEndTime)) {
+                lastSubEndTime = subtask.getEndTime ();
+            }
+        }
+        return Duration.between (getStartTime (), lastSubEndTime);
+    }
 
     @Override
-    public String toString() {
+    public LocalDateTime getStartTime () {
+        LocalDateTime startFirstSub = LocalDateTime.MAX;
+        for (SubTask subtask : getSubTasks ()) {
+            if (subtask.getStartTime () != null &&
+                    startFirstSub.isAfter (subtask.getStartTime ())) {
+                startFirstSub = subtask.getStartTime ();
+            }
+        }
+        if (startFirstSub.isEqual (LocalDateTime.MAX)) {
+            return null;
+        } else {
+            return startFirstSub;
+        }
+
+    }
+
+    @Override
+    public Types getType () {
+        return Types.EPIC_TASK;
+    }
+
+    @Override
+    public String toString () {
         return "epic {" +
-                "name = '" + getName() + '\'' +
-                ", description = '" + getDescription() + '\'' +
-                ", id = " + getIdentifier() +
-                ", status = '" + getStatus() + '\'' +
-                ", subTasksIds included = '" + getSubTasksIds() + '\'' +
+                "name = '" + getName () + '\'' +
+                ", description = '" + getDescription () + '\'' +
+                ", id = " + getIdentifier () +
+                ", status = '" + getStatus () + '\'' +
+                ", subTasksIds included = '" + getSubTasksIds () + '\'' +
                 '}';
     }
 }

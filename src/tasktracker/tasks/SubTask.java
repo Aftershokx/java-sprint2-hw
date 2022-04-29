@@ -14,6 +14,11 @@ public class SubTask extends Task {
     }
 
     @Override
+    public Types getType () {
+        return Types.SUBTASK;
+    }
+
+    @Override
     public String toString() {
         return "subTask {" +
                 "name = '" + getName() + '\'' +

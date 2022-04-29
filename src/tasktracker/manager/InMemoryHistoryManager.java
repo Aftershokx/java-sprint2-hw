@@ -14,7 +14,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     private final HashMap<Integer, Node<Task>> history = new HashMap<> ();
 
-    public void removeNode (Node<Task> node) {                                          //Удаление узла
+    private void removeNode (Node<Task> node) {                                          //Удаление узла
         if (node == null) {
             return;
         }

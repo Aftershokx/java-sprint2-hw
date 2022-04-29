@@ -36,15 +36,17 @@ public interface TaskManager {
 
     void removeSubTaskWithId (int id);                                     //Удаление подзадач по ТД
 
-    void removeTaskWithId (int id);                                           //Удаление задач по ИД
+    void removeTaskWithId (int id);                                        //Удаление задач по ИД
 
-    void removeEpicTaskWithId (int id);                                      //Удаление Эпиков по ИД
+    void removeEpicTaskWithId (int id);                                    //Удаление Эпиков по ИД
 
     void updateEpicTask (EpicTask epicTask);                               //Замена эпика
 
     void updateTask (Task task);                                            //Замена задачи
 
     void updateSubTask (SubTask subTask);                                   //Замена подзадачи
+
+    void getPrioritizedTasks ();                                   //Сортировка задач и подзадач по времени начала
 
     List<Task> history ();                                          //Получение истории
 
