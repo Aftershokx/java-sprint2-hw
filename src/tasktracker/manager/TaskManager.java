@@ -6,19 +6,16 @@ import tasktracker.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 
 public interface TaskManager {
 
-    ArrayList<EpicTask> getEpicTasks ();                  //Распаковка мапы эпиков
+    ArrayList<EpicTask> getEpicTasks ();                  //Распаковка эпиков
 
-    ArrayList<SubTask> getSubTasks ();                   //Распаковка мапы подзадач
+    ArrayList<SubTask> getSubTasks ();                   //Распаковка подзадач
 
-    ArrayList<Task> getTasks ();                          //Распаковка мапы задач
-
-    void createEpicTask (EpicTask epicTask);                                //создание Эпика
-
-    void createSubTask (SubTask subTask);                                  //Создание подзадач
+    ArrayList<Task> getTasks ();                          //Распаковка задач
 
     void createTask (Task task);                                            //Создание задач
 
@@ -32,7 +29,7 @@ public interface TaskManager {
 
     void clearSubTasks ();                                                 //Удаление всех подзадач
 
-    void clearTasks ();                                                    //Удадение всех задач
+    void clearTasks ();                                                    //Удаление всех задач
 
     void removeSubTaskWithId (int id);                                     //Удаление подзадач по ТД
 
@@ -46,7 +43,7 @@ public interface TaskManager {
 
     void updateSubTask (SubTask subTask);                                   //Замена подзадачи
 
-    void getPrioritizedTasks ();                                   //Сортировка задач и подзадач по времени начала
+    TreeSet<Task> getPrioritizedTasks ();                                   //Сортировка задач и подзадач по времени начала
 
     List<Task> history ();                                          //Получение истории
 

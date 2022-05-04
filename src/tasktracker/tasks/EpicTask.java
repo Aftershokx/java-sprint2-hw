@@ -25,7 +25,7 @@ public class EpicTask extends Task {
         return subTasks;
     }
 
-    public void addSubtask(SubTask subTask) {                                   //Добавление плдзадачи
+    public void addSubtask(SubTask subTask) {                                   //Добавление подзадачи
         if (subTask != null) {
             subTasks.add(subTask);
         }
@@ -111,6 +111,9 @@ public class EpicTask extends Task {
                 ", id = " + getIdentifier () +
                 ", status = '" + getStatus () + '\'' +
                 ", subTasksIds included = '" + getSubTasksIds () + '\'' +
+                ", duration=" + getDuration () +
+                ", startTime=" + getStartTime () +
+                ", endTime=" + getEndTime () +
                 '}';
     }
 }

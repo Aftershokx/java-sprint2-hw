@@ -1,10 +1,3 @@
 id,type,name,status,description,epic
-1,TASK,test1,NEW,test1
 2,TASK,test2,NEW,test2
-3,EPIC_TASK,test3,NEW,test3
-7,EPIC_TASK,test7,NEW,test7
-4,SUBTASK,test4,NEW,test4,3
-5,SUBTASK,test5,NEW,test5,3
-6,SUBTASK,test6,NEW,test6,3
 
-3,7,4,5,6,1,2,

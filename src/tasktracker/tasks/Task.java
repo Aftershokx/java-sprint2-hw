@@ -106,12 +106,15 @@ public class Task {
     }
 
     @Override
-    public String toString() {
-        return "task {" +
-                "name = '" + name + '\'' +
-                ", description = '" + description + '\'' +
-                ", identifier = " + identifier +
-                ", status = '" + status + '\'' +
+    public String toString () {
+        return "Task{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                ", identifier=" + identifier +
+                ", type=" + type +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
                 '}';
     }
 }
