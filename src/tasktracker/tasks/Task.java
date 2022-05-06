@@ -10,8 +10,8 @@ public class Task {
     private Status status;
     private int identifier;
     private Types type;
-    private Duration duration;
-    private LocalDateTime startTime;
+    protected Duration duration;
+    protected LocalDateTime startTime;
 
     public Task(String name, String description, Status status) {
         this.name = name;

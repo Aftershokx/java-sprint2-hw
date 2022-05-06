@@ -4,7 +4,6 @@ import tasktracker.tasks.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -13,7 +12,7 @@ import java.util.function.Predicate;
 public class InMemoryTaskManager implements TaskManager {
     protected int uniId = 0;
     protected final HistoryManager historyManager = Managers.getDefaultHistory ();
-    protected final Comparator<Task> comparator = (o1, o2) -> {
+    protected final TreeSet<Task> tasks = new TreeSet<> ((o1, o2) -> {
         if (o1.getIdentifier () == o2.getIdentifier ()) {
             return 0;
         }
@@ -36,8 +35,7 @@ public class InMemoryTaskManager implements TaskManager {
             return 1;
         }
         return 0;
-    };
-    protected final TreeSet<Task> tasks = new TreeSet<> (comparator);
+    });
 
 
     //Счетчик
@@ -216,7 +214,7 @@ public class InMemoryTaskManager implements TaskManager {
             EpicTask prevEpic = searchEpicWithId (subTask.getEpicIdentifier ());
             if (prevEpic != null) {
                 prevEpic.removeSubtask (subTask);
-                tasks.remove (subTask);
+                tasks.removeIf (subTask::equals);
                 historyManager.remove (id);
             }
         }
@@ -227,7 +225,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeTaskWithId (int id) {
         Task task = searchTaskWithId (id);
         if (task != null) {
-            tasks.remove (task);
+            tasks.removeIf (task::equals);
             historyManager.remove (id);
         }
     }
@@ -249,16 +247,20 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateEpicTask (EpicTask epicTask) {
         if (epicTask != null) {
-            removeEpicTaskWithId (epicTask.getIdentifier ());
-            tasks.add (epicTask);
+            if (intersectionCheck.test (epicTask)) {
+                removeEpicTaskWithId (epicTask.getIdentifier ());
+                tasks.add (epicTask);
+            }
         }
     }
 
     //Замена задачи
     public void updateTask (Task task) {
         if (task != null) {
-            removeTaskWithId (task.getIdentifier ());
-            tasks.add (task);
+            if (intersectionCheck.test (task)) {
+                removeTaskWithId (task.getIdentifier ());
+                tasks.add (task);
+            }
         }
     }
 
@@ -266,12 +268,15 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTask (SubTask subTask) {
         if (subTask != null) {
-            EpicTask prevEpic = searchEpicWithId (subTask.getEpicIdentifier ());
-            SubTask prevSubTask = searchSubTaskWithId (subTask.getIdentifier ());
-            if (prevSubTask != null) {
-                removeSubTaskWithId (prevSubTask.getIdentifier ());
-                tasks.add (subTask);
-                prevEpic.updateEpicStatus ();
+            if (intersectionCheck.test (subTask)) {
+                EpicTask prevEpic = searchEpicWithId (subTask.getEpicIdentifier ());
+                SubTask prevSubTask = searchSubTaskWithId (subTask.getIdentifier ());
+                if (prevSubTask != null) {
+                    removeSubTaskWithId (prevSubTask.getIdentifier ());
+                    tasks.add (subTask);
+                    prevEpic.addSubtask (subTask);
+                    prevEpic.updateEpicStatus ();
+                }
             }
         }
     }

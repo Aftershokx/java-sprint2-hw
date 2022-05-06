@@ -7,21 +7,22 @@ import java.util.ArrayList;
 
 public class EpicTask extends Task {
 
-    private final ArrayList<SubTask> subTasks = new ArrayList<>();
+    private final ArrayList<SubTask> subTasks = new ArrayList<> ();
+    private LocalDateTime endTime;
 
-    public EpicTask(String name, String description) {
-        super(name, description);
+    public EpicTask (String name, String description) {
+        super (name, description);
     }
 
-    public ArrayList<Integer> getSubTasksIds() {                                  //получение списка Ид подзадач
-        ArrayList<Integer> subTasksIds = new ArrayList<>();
+    public ArrayList<Integer> getSubTasksIds () {                                  //получение списка Ид подзадач
+        ArrayList<Integer> subTasksIds = new ArrayList<> ();
         for (SubTask subTask : subTasks) {
-            subTasksIds.add(subTask.getIdentifier());
+            subTasksIds.add (subTask.getIdentifier ());
         }
         return subTasksIds;
     }
 
-    public ArrayList<SubTask> getSubTasks() {                                     //получение подзадач
+    public ArrayList<SubTask> getSubTasks () {                                     //получение подзадач
         return subTasks;
     }
 
@@ -78,7 +79,7 @@ public class EpicTask extends Task {
                 lastSubEndTime = subtask.getEndTime ();
             }
         }
-        return Duration.between (getStartTime (), lastSubEndTime);
+        return this.duration = Duration.between (getStartTime (), lastSubEndTime);
     }
 
     @Override
@@ -93,9 +94,18 @@ public class EpicTask extends Task {
         if (startFirstSub.isEqual (LocalDateTime.MAX)) {
             return null;
         } else {
-            return startFirstSub;
+            return this.startTime = startFirstSub;
         }
+    }
 
+    @Override
+    public LocalDateTime getEndTime () {
+        setEndTime (super.getEndTime ());
+        return endTime;
+    }
+
+    public void setEndTime (LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     @Override
