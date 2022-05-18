@@ -1,6 +1,4 @@
-package tasktracker.manager;
-
-import java.io.File;
+package tasktracker.managers;
 
 public class Managers {
 
@@ -10,6 +8,10 @@ public class Managers {
 
     public static HistoryManager getDefaultHistory () {
         return new InMemoryHistoryManager ();
+    }
+
+    public static FileBackedTasksManager getDefaultFileBacked(){
+        return new FileBackedTasksManager ();
     }
 
 }

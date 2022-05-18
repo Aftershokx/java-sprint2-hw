@@ -1,4 +1,4 @@
-package tasktracker.manager;
+package tasktracker.managers;
 
 public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     @Override

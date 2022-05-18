@@ -1,4 +1,4 @@
-package tasktracker.manager;
+package tasktracker.managers;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -125,9 +125,6 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void clearSubTasksPositiveReaction () {
-        List<SubTask> subTasks = List.of (firstSubTask, secondSubTask);
-        Assertions.assertTrue (tasksManager.getSubTasks ().containsAll (subTasks),
-                "Не все подзадачи добавлены корректно");
         tasksManager.clearSubTasks ();
         Assertions.assertTrue (tasksManager.getSubTasks ().isEmpty (), "Список подзадач не пуст");
     }

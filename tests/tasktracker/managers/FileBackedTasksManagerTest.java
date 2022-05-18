@@ -1,4 +1,4 @@
-package tasktracker.manager;
+package tasktracker.managers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

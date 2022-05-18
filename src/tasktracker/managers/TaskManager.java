@@ -1,4 +1,4 @@
-package tasktracker.manager;
+package tasktracker.managers;
 
 import tasktracker.tasks.EpicTask;
 import tasktracker.tasks.SubTask;

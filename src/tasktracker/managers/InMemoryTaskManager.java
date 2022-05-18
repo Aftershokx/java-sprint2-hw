@@ -1,4 +1,4 @@
-package tasktracker.manager;
+package tasktracker.managers;
 
 import tasktracker.tasks.*;
 
@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
-
 public class InMemoryTaskManager implements TaskManager {
     protected int uniId = 0;
-    protected final HistoryManager historyManager = Managers.getDefaultHistory ();
+    protected HistoryManager historyManager = Managers.getDefaultHistory ();
     protected final TreeSet<Task> tasks = new TreeSet<> ((o1, o2) -> {
         if (o1.getIdentifier () == o2.getIdentifier ()) {
             return 0;
@@ -37,12 +36,33 @@ public class InMemoryTaskManager implements TaskManager {
         return 0;
     });
 
+    protected void setHistoryManager (HistoryManager historyManager) {
+        this.historyManager = historyManager;
+    }
 
     //Счетчик
-    public int updateId () {
-        int updatedId = uniId + 1;
-        uniId = updatedId;
-        return updatedId;
+    public int updateId (Task task) {
+        List<Integer> currentIds = new ArrayList<> ();
+        for (Task task1 : tasks) {
+            currentIds.add (task1.getIdentifier ());
+        }
+        if (task.getIdentifier () > 0) {
+            uniId = task.getIdentifier ();
+            currentIds.add (uniId);
+        } else {
+            int maxId = 0;
+            for (Integer currentId : currentIds) {
+                if (currentId > maxId) {
+                    maxId = currentId;
+                }
+            }
+            uniId = maxId + 1;
+        }
+
+        if (uniId == 0) {
+            uniId++;
+        }
+        return uniId;
     }
 
     //Проверка пересечения по времени
@@ -119,21 +139,21 @@ public class InMemoryTaskManager implements TaskManager {
     public void createTask (Task task) {
         if (task != null) {
             if (intersectionCheck.test (task)) {
-                if (task.getType () == null) {
+                if (task.getType () == null || task.getType () == Types.TASK) {
                     task.setType (Types.TASK);
-                    task.setIdentifier (updateId ());
+                    task.setIdentifier (updateId (task));
                     tasks.add (task);
                 } else if (task.getType ().equals (Types.EPIC_TASK)) {
                     EpicTask epicTask = (EpicTask) task;
                     epicTask.updateEpicStatus ();
-                    epicTask.setIdentifier (updateId ());
+                    epicTask.setIdentifier (updateId (task));
                     tasks.add (epicTask);
                 } else if (task.getType ().equals (Types.SUBTASK)) {
                     SubTask subTask = (SubTask) task;
                     EpicTask prevEpic = searchEpicWithId (subTask.getEpicIdentifier ());
                     if (prevEpic != null) {
                         if (subTask.getStatus () == Status.NEW) {
-                            subTask.setIdentifier (updateId ());
+                            subTask.setIdentifier (updateId (task));
                         }
                         prevEpic.addSubtask (subTask);
                         tasks.add (subTask);
@@ -247,9 +267,15 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateEpicTask (EpicTask epicTask) {
         if (epicTask != null) {
+            EpicTask prevEpic = searchEpicWithId (epicTask.getIdentifier ());
+            List<SubTask> subTasks = new ArrayList<> (epicTask.getSubTasks ());
             if (intersectionCheck.test (epicTask)) {
-                removeEpicTaskWithId (epicTask.getIdentifier ());
+                removeEpicTaskWithId (prevEpic.getIdentifier ());
                 tasks.add (epicTask);
+                tasks.addAll (subTasks);
+                for (SubTask subTask : subTasks) {
+                    epicTask.addSubtask (subTask);
+                }
             }
         }
     }
@@ -292,6 +318,7 @@ public class InMemoryTaskManager implements TaskManager {
     public TreeSet<Task> getPrioritizedTasks () {
         return tasks;
     }
+
 }
 
 

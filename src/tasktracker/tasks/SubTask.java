@@ -7,6 +7,7 @@ public class SubTask extends Task {
     public SubTask(String name, String description, Status status, int epicIdentifier) {
         super(name, description, status);
         this.epicIdentifier = epicIdentifier;
+        this.type = getType ();
     }
 
     public int getEpicIdentifier() {
@@ -26,6 +27,7 @@ public class SubTask extends Task {
                 ", identifier = " + getIdentifier() +
                 ", status = '" + getStatus() + '\'' +
                 ", epicIdentifier = '" + epicIdentifier +
+                ", type = '" + getType () + '\'' +
                 ", duration=" + getDuration () +
                 ", startTime=" + getStartTime () +
                 '}';

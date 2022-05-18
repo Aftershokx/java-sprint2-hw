@@ -9,7 +9,7 @@ public class Task {
     private String description;
     private Status status;
     private int identifier;
-    private Types type;
+    protected Types type;
     protected Duration duration;
     protected LocalDateTime startTime;
 

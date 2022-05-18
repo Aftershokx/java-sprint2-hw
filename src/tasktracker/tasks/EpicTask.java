@@ -12,6 +12,7 @@ public class EpicTask extends Task {
 
     public EpicTask (String name, String description) {
         super (name, description);
+        this.type = getType ();
     }
 
     public ArrayList<Integer> getSubTasksIds () {                                  //получение списка Ид подзадач
@@ -24,6 +25,10 @@ public class EpicTask extends Task {
 
     public ArrayList<SubTask> getSubTasks () {                                     //получение подзадач
         return subTasks;
+    }
+
+    public void RemoveAllSubTasks(){
+        subTasks.clear ();
     }
 
     public void addSubtask(SubTask subTask) {                                   //Добавление подзадачи
@@ -120,6 +125,7 @@ public class EpicTask extends Task {
                 ", description = '" + getDescription () + '\'' +
                 ", id = " + getIdentifier () +
                 ", status = '" + getStatus () + '\'' +
+                ", type = '" + getType () + '\'' +
                 ", subTasksIds included = '" + getSubTasksIds () + '\'' +
                 ", duration=" + getDuration () +
                 ", startTime=" + getStartTime () +

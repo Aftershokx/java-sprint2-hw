@@ -1,4 +1,4 @@
-package tasktracker.manager;
+package tasktracker.managers;
 
 import tasktracker.tasks.*;
 import tasktracker.utility.exceptions.ManagerSaveException;
@@ -69,7 +69,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     if (!line.equals ("id,type,name,status,description,epic")) {
                         Task task = fromString (line);
                         fileBackedTasksManager.tasks.add (task);
-                        fileBackedTasksManager.updateId ();
+                        fileBackedTasksManager.updateId (task);
                         if (task.getType ().equals (Types.SUBTASK)) {
                             SubTask subTask = (SubTask) task;
                             for (Task testTask : fileBackedTasksManager.tasks) {
@@ -186,32 +186,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public List<Task> history () {
-        save ();
-        return super.history ();
-    }
-
-    @Override
-    public ArrayList<EpicTask> getEpicTasks () {
-        save ();
-        return super.getEpicTasks ();
-    }
-
-    @Override
-    public ArrayList<SubTask> getSubTasks () {
-        save ();
-        return super.getSubTasks ();
-    }
-
-    @Override
-    public ArrayList<Task> getTasks () {
-        save ();
-        return super.getTasks ();
-    }
-
-    @Override
-    public int updateId () {
-        return super.updateId ();
+    public int updateId (Task task) {
+        return super.updateId (task);
     }
 
     @Override
@@ -220,7 +196,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     //Сохранение в файл
-    private void save () {
+    protected void save () {
         try (Writer fileWriterStart = new FileWriter (path)) {
             fileWriterStart.write ("id,type,name,status,description,epic\n");
             for (Task task : tasks) {

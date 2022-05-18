@@ -1,4 +1,4 @@
-package tasktracker.manager;
+package tasktracker.managers;
 
 import tasktracker.tasks.Task;
 import tasktracker.utility.Node;
