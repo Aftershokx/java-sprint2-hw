@@ -2,7 +2,6 @@ package tasktracker.tasks;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,12 +51,7 @@ class EpicTaskTest {
     protected void getSubTasksThrowsWhenEmpty () {
         final IndexOutOfBoundsException exception = assertThrows (
                 IndexOutOfBoundsException.class,
-                new Executable () {
-                    @Override
-                    public void execute () {
-                        epicTask.getSubTasks ().get (0);
-                    }
-                });
+                () -> epicTask.getSubTasks ().get (0));
     }
 
     @Test

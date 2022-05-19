@@ -125,6 +125,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void clearSubTasksPositiveReaction () {
+
         tasksManager.clearSubTasks ();
         Assertions.assertTrue (tasksManager.getSubTasks ().isEmpty (), "Список подзадач не пуст");
     }

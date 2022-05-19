@@ -1,47 +1,33 @@
 package tasktracker.managers;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.*;
 import tasktracker.server.KVServer;
 import tasktracker.server.KVTaskClient;
-import tasktracker.server.adapters.DurationAdapter;
-import tasktracker.server.adapters.ExceptionAdapter;
-import tasktracker.server.adapters.LocalDateTimeAdapter;
 import tasktracker.tasks.EpicTask;
 import tasktracker.tasks.Status;
 import tasktracker.tasks.SubTask;
 import tasktracker.tasks.Task;
 import tasktracker.utility.exceptions.RequestException;
-import tasktracker.utility.exceptions.TaskException;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HttpTaskManagerTest extends FileBackedTasksManagerTest {
+public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
     private static KVServer kvServer;
-    private HttpTaskManager HttpTaskManager;
     private static KVTaskClient kvTaskClient;
     private static Gson gson;
 
     @BeforeAll
-    public static void beforeAllHttpTaskManagerTests () {
+    public static void beforeAllHttpManagerTests () {
         try {
             kvServer = new KVServer ();
             kvServer.start ();
 
-            gson = new GsonBuilder ()
-                    .registerTypeAdapter (Duration.class, new DurationAdapter ())
-                    .registerTypeAdapter (LocalDateTime.class, new LocalDateTimeAdapter ())
-                    .registerTypeAdapter (TaskException.class, new ExceptionAdapter ())
-                    .registerTypeAdapter (RequestException.class, new ExceptionAdapter ())
-                    .setPrettyPrinting ()
-                    .create ();
+            gson = Managers.createDefaultGson ();
 
             kvTaskClient = new KVTaskClient ("http://localhost:8078/");
             kvTaskClient.setKeyApi ("DEBUG");
@@ -53,31 +39,44 @@ public class HttpTaskManagerTest extends FileBackedTasksManagerTest {
 
     }
 
-    @BeforeEach
-    public void beforeEachHttpTaskManagerTests () {
-        HttpTaskManager = new HttpTaskManager ("http://localhost:8078/");
+    @AfterAll
+    public static void afterAllHttpManagerTests () {
+        kvServer.stop ();
     }
 
-    @DisplayName ("Должно пройти корректное сохранение эпика без подзадач")
+    public void cleaning () {
+        tasksManager.clearTasks ();
+        tasksManager.clearSubTasks ();
+        tasksManager.clearEpics ();
+    }
+
+    @Override
+    void preLoadTaskManager () {
+        tasksManager = new HttpTaskManager ("http://localhost:8078/");
+    }
+
+    @DisplayName("Должно пройти корректное сохранение эпика без подзадач")
     @Test
-    public void shouldSaveEpicWithoutSubTasks () {
+    public void shouldSaveEpicWithoutSubTasks () throws IOException, InterruptedException, RequestException {
+        cleaning ();
         EpicTask epic = new EpicTask ("epic", "epic");
-        HttpTaskManager.createTask (epic);
+        tasksManager.createTask (epic);
         String responseFromKVServer = kvTaskClient.load ("tasks");
         JsonArray jsonArray = JsonParser.parseString (responseFromKVServer).getAsJsonArray ();
         EpicTask epicFromKVServer = gson.fromJson (jsonArray.get (0), EpicTask.class);
         assertEquals (epic, epicFromKVServer);
     }
 
-    @DisplayName ("Должно пройти корректное сохранение эпика с подзадачами")
+    @DisplayName("Должно пройти корректное сохранение эпика с подзадачами")
     @Test
-    public void shouldSaveEpicWithSubTasks () {
+    public void shouldSaveEpicWithSubTasks () throws IOException, InterruptedException, RequestException {
+        cleaning ();
         EpicTask epic = new EpicTask ("epic", "epic");
-        HttpTaskManager.createTask (epic);
-        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1",  Status.NEW, epic.getIdentifier ());
-        HttpTaskManager.createTask (subtask1);
-        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2",  Status.NEW, epic.getIdentifier ());
-        HttpTaskManager.createTask (subtask2);
+        tasksManager.createTask (epic);
+        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1", Status.NEW, epic.getIdentifier ());
+        tasksManager.createTask (subtask1);
+        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2", Status.NEW, epic.getIdentifier ());
+        tasksManager.createTask (subtask2);
         String responseFromKVServer = kvTaskClient.load ("tasks");
 
         JsonArray jsonArray = JsonParser.parseString (responseFromKVServer).getAsJsonArray ();
@@ -90,13 +89,14 @@ public class HttpTaskManagerTest extends FileBackedTasksManagerTest {
         );
     }
 
-    @DisplayName ("Должно пройти корректное сохранение задач")
+    @DisplayName("Должно пройти корректное сохранение задач")
     @Test
-    public void shouldSaveTasks () {
-        Task task1 = new Task ( "Task1", "t1", Status.NEW);
-        Task task2 = new Task ( "Task2", "t1", Status.NEW);
-        HttpTaskManager.createTask (task1);
-        HttpTaskManager.createTask (task2);
+    public void shouldSaveTasks () throws IOException, InterruptedException, RequestException {
+        cleaning ();
+        Task task1 = new Task ("Task1", "t1", Status.NEW);
+        Task task2 = new Task ("Task2", "t1", Status.NEW);
+        tasksManager.createTask (task1);
+        tasksManager.createTask (task2);
         String responseFromKVServer = kvTaskClient.load ("tasks");
         JsonArray jsonArray = JsonParser.parseString (responseFromKVServer).getAsJsonArray ();
         Task task1FromKVServer = gson.fromJson (jsonArray.get (0), Task.class);
@@ -108,30 +108,32 @@ public class HttpTaskManagerTest extends FileBackedTasksManagerTest {
         );
     }
 
-    @DisplayName ("Должно пройти корректное обновление задачи на сервере, после обновления в менеджере")
+    @DisplayName("Должно пройти корректное обновление задачи на сервере, после обновления в менеджере")
     @Test
-    public void shouldUpdateTaskInKVServerWhenUpdatedTaskInTaskManager () {
-        Task task = new Task ( "task1", "Disc Before Update", Status.NEW);
-        HttpTaskManager.createTask (task);
+    public void shouldUpdateTaskInKVServerWhenUpdatedTaskInTaskManager () throws IOException, InterruptedException, RequestException {
+        cleaning ();
+        Task task = new Task ("task1", "Disc Before Update", Status.NEW);
+        tasksManager.createTask (task);
         String newDescription = "new disc for task";
         task.setDescription (newDescription);
-        HttpTaskManager.updateTask (task);
+        tasksManager.updateTask (task);
 
         String responseFromKVServer = kvTaskClient.load ("tasks");
         JsonArray jsonArray = JsonParser.parseString (responseFromKVServer).getAsJsonArray ();
-        Task monoFromKVServer = gson.fromJson (jsonArray.get (0), Task.class);
+        Task fromKVServer = gson.fromJson (jsonArray.get (0), Task.class);
 
-        assertEquals (monoFromKVServer.getDescription (), newDescription);
+        assertEquals (fromKVServer.getDescription (), newDescription);
     }
 
-    @DisplayName ("Должно пройти корректное обновление эпика на сервере, после обновления в менеджере")
+    @DisplayName("Должно пройти корректное обновление эпика на сервере, после обновления в менеджере")
     @Test
-    public void shouldUpdateEpicInKVServerWhenUpdatedEpicInTaskManager () {
-        EpicTask epic = new EpicTask ( "Epic1", "e1");
-        HttpTaskManager.createTask (epic);
+    public void shouldUpdateEpicInKVServerWhenUpdatedEpicInTaskManager () throws IOException, InterruptedException, RequestException {
+        cleaning ();
+        EpicTask epic = new EpicTask ("Epic1", "e1");
+        tasksManager.createTask (epic);
         String newEpicTitle = "New epic title";
         epic.setDescription (newEpicTitle);
-        HttpTaskManager.updateTask (epic);
+        tasksManager.updateTask (epic);
 
         String responseFromKVServer = kvTaskClient.load ("tasks");
         JsonArray jsonArray = JsonParser.parseString (responseFromKVServer).getAsJsonArray ();
@@ -141,21 +143,22 @@ public class HttpTaskManagerTest extends FileBackedTasksManagerTest {
 
     }
 
-    @DisplayName ("Должно пройти корректное сохранение истории на сервере")
+    @DisplayName("Должно пройти корректное сохранение истории на сервере")
     @Test
-    public void shouldBeSaveHistoryOnKVServer () {
+    public void shouldBeSaveHistoryOnKVServer () throws IOException, InterruptedException, RequestException {
+        cleaning ();
         EpicTask epic = new EpicTask ("epic", "epic");
-        HttpTaskManager.createTask (epic);
-        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1",  Status.NEW, epic.getIdentifier ());
-        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2",  Status.NEW, epic.getIdentifier ());
-        HttpTaskManager.createTask (subtask1);
-        HttpTaskManager.createTask (subtask2);
-        Task task = new Task ( "Task1", "t1", Status.NEW);
-        HttpTaskManager.createTask (task);
+        tasksManager.createTask (epic);
+        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1", Status.NEW, epic.getIdentifier ());
+        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2", Status.NEW, epic.getIdentifier ());
+        tasksManager.createTask (subtask1);
+        tasksManager.createTask (subtask2);
+        Task task = new Task ("Task1", "t1", Status.NEW);
+        tasksManager.createTask (task);
 
-        HttpTaskManager.searchSubTaskWithId (2);
-        HttpTaskManager.searchTaskWithId (4);
-        HttpTaskManager.searchEpicWithId (1);
+        tasksManager.searchSubTaskWithId (2);
+        tasksManager.searchTaskWithId (4);
+        tasksManager.searchEpicWithId (1);
 
         String responseFromKVServer = kvTaskClient.load ("history");
         JsonArray jsonArray = JsonParser.parseString (responseFromKVServer).getAsJsonArray ();
@@ -170,22 +173,23 @@ public class HttpTaskManagerTest extends FileBackedTasksManagerTest {
         );
     }
 
-    @DisplayName ("Должно пройти корректное сохранение истории на сервере, когда запрашивается уже сущ. задача в истории")
+    @DisplayName("Должно пройти корректное сохранение истории на сервере, когда запрашивается уже сущ. задача в истории")
     @Test
-    public void shouldUpdateHistoryOnKVServerWhenGetPreviouslyAddedTask () {
+    public void shouldUpdateHistoryOnKVServerWhenGetPreviouslyAddedTask () throws IOException, InterruptedException, RequestException {
+        cleaning ();
         EpicTask epic = new EpicTask ("epic", "epic");
-        HttpTaskManager.createTask (epic);
-        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1",  Status.NEW, epic.getIdentifier ());
-        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2",  Status.NEW, epic.getIdentifier ());
-        HttpTaskManager.createTask (subtask1);
-        HttpTaskManager.createTask (subtask2);
-        Task task = new Task ( "Task1", "t1", Status.NEW);
-        HttpTaskManager.createTask (task);
+        tasksManager.createTask (epic);
+        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1", Status.NEW, epic.getIdentifier ());
+        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2", Status.NEW, epic.getIdentifier ());
+        tasksManager.createTask (subtask1);
+        tasksManager.createTask (subtask2);
+        Task task = new Task ("Task1", "t1", Status.NEW);
+        tasksManager.createTask (task);
 
-        HttpTaskManager.searchSubTaskWithId (2);
-        HttpTaskManager.searchTaskWithId (4);
-        HttpTaskManager.searchEpicWithId (1);
-        HttpTaskManager.searchSubTaskWithId (2);
+        tasksManager.searchSubTaskWithId (2);
+        tasksManager.searchTaskWithId (4);
+        tasksManager.searchEpicWithId (1);
+        tasksManager.searchSubTaskWithId (2);
 
         String responseFromKVServer = kvTaskClient.load ("history");
         JsonArray jsonArray = JsonParser.parseString (responseFromKVServer).getAsJsonArray ();
@@ -203,29 +207,25 @@ public class HttpTaskManagerTest extends FileBackedTasksManagerTest {
     @DisplayName ("Должна пройти корректная загрузка из сервера")
     @Test
     public void shouldLoadTaskManagerStateFromKVServer () {
+        cleaning ();
         EpicTask epic = new EpicTask ("epic", "epic");
-        HttpTaskManager.createTask (epic);
-        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1",  Status.NEW, epic.getIdentifier ());
-        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2",  Status.NEW, epic.getIdentifier ());
-        HttpTaskManager.createTask (subtask1);
-        HttpTaskManager.createTask (subtask2);
-        Task task = new Task ( "Task1", "t1", Status.NEW);
-        HttpTaskManager.createTask (task);
+        tasksManager.createTask (epic);
+        SubTask subtask1 = new SubTask ("subtask1 for Epic1", "s1", Status.NEW, epic.getIdentifier ());
+        SubTask subtask2 = new SubTask ("subtask2 for Epic1", "s2", Status.NEW, epic.getIdentifier ());
+        tasksManager.createTask (subtask1);
+        tasksManager.createTask (subtask2);
+        Task task = new Task ("Task1", "t1", Status.NEW);
+        tasksManager.createTask (task);
 
         HttpTaskManager loadedTaskManager = new HttpTaskManager ("http://localhost:8078/");
-        loadedTaskManager.loadFromServer ("DEBUG");
 
         Assertions.assertAll (
-                () -> assertEquals (HttpTaskManager.getEpicTasks (), loadedTaskManager.getEpicTasks ()),
-                () -> assertEquals (HttpTaskManager.getTasks (), loadedTaskManager.getTasks ()),
-                () -> assertEquals (HttpTaskManager.getSubTasks(),
+                () -> assertEquals (tasksManager.getEpicTasks (), loadedTaskManager.getEpicTasks ()),
+                () -> assertEquals (tasksManager.getTasks (), loadedTaskManager.getTasks ()),
+                () -> assertEquals (tasksManager.getSubTasks (),
                         loadedTaskManager.getSubTasks ()),
-                () -> assertEquals (HttpTaskManager.history (), loadedTaskManager.history ())
+                () -> assertEquals (tasksManager.history (), loadedTaskManager.history ())
         );
     }
 
-    @AfterAll
-    public static void afterAllHttpTaskManagerTests () {
-        kvServer.stop ();
-    }
 }

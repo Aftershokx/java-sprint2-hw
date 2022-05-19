@@ -9,6 +9,7 @@ import tasktracker.tasks.EpicTask;
 import tasktracker.tasks.Status;
 import tasktracker.tasks.SubTask;
 import tasktracker.tasks.Task;
+import tasktracker.utility.exceptions.RequestException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +19,7 @@ import java.net.http.HttpResponse;
 
 
 public class Main {
-    public static void main (String[] args) throws IOException, InterruptedException {
+    public static void main (String[] args) throws IOException, InterruptedException, RequestException {
         KVServer kvServer = new KVServer ();
         kvServer.start ();
         TaskManager taskManager = new HttpTaskManager ("http://localhost:8078/");
@@ -54,5 +55,7 @@ public class Main {
 
         HttpResponse<String> response = client.send (req, HttpResponse.BodyHandlers.ofString ());
         System.out.println (response);
+        kvServer.stop ();
+
     }
 }

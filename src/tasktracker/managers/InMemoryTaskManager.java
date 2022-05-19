@@ -210,20 +210,43 @@ public class InMemoryTaskManager implements TaskManager {
     //Удаление всех эпиков
     @Override
     public void clearEpics () {
-        tasks.removeIf (task -> task.getType ().equals (Types.EPIC_TASK));
-        clearSubTasks ();
+        List<Integer> epicId = new ArrayList<> ();
+        for (Task task : tasks) {
+            if (task.getType ().equals (Types.EPIC_TASK)) {
+                epicId.add (task.getIdentifier ());
+            }
+        }
+        for (Integer integer : epicId) {
+            removeEpicTaskWithId (integer);
+        }
     }
 
     //Удаление всех подзадач
     @Override
     public void clearSubTasks () {
-        tasks.removeIf (task -> task.getType ().equals (Types.SUBTASK));
+        List<Integer> subId = new ArrayList<> ();
+        for (Task task : tasks) {
+            if (task.getType ().equals (Types.SUBTASK)) {
+                subId.add (task.getIdentifier ());
+            }
+        }
+        for (Integer integer : subId) {
+            removeSubTaskWithId (integer);
+        }
     }
 
     //Удаление всех задач
     @Override
     public void clearTasks () {
-        tasks.removeIf (task -> task.getType ().equals (Types.TASK));
+        List<Integer> taskId = new ArrayList<> ();
+        for (Task task : tasks) {
+            if (task.getType ().equals (Types.TASK)) {
+                taskId.add (task.getIdentifier ());
+            }
+        }
+        for (Integer integer : taskId) {
+            removeTaskWithId (integer);
+        }
     }
 
     //Удаление подзадач по ИД

@@ -1,20 +1,18 @@
 package tasktracker.managers;
 
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import tasktracker.server.KVTaskClient;
-import tasktracker.server.adapters.DurationAdapter;
-import tasktracker.server.adapters.ExceptionAdapter;
-import tasktracker.server.adapters.LocalDateTimeAdapter;
 import tasktracker.tasks.EpicTask;
 import tasktracker.tasks.SubTask;
 import tasktracker.tasks.Task;
 import tasktracker.tasks.Types;
 import tasktracker.utility.exceptions.RequestException;
-import tasktracker.utility.exceptions.TaskException;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -24,13 +22,12 @@ public class HttpTaskManager extends FileBackedTasksManager {
 
     public HttpTaskManager (String url) {
         this.kvTaskClient = new KVTaskClient (url);
-        this.gson = new GsonBuilder ()
-                .registerTypeAdapter (Duration.class, new DurationAdapter ())
-                .registerTypeAdapter (LocalDateTime.class, new LocalDateTimeAdapter ())
-                .registerTypeAdapter (TaskException.class, new ExceptionAdapter ())
-                .registerTypeAdapter (RequestException.class, new ExceptionAdapter ())
-                .setPrettyPrinting ()
-                .create ();
+        this.gson = Managers.createDefaultGson ();
+        try {
+            this.loadFromServer ();
+        } catch (IOException | InterruptedException | RequestException e) {
+            e.printStackTrace ();
+        }
     }
 
     //Сохранение на сервере
@@ -42,42 +39,47 @@ public class HttpTaskManager extends FileBackedTasksManager {
         String tasksJson = gson.toJson (tasks);
         String historyJson = gson.toJson (history ());
 
-        kvTaskClient.put ("tasks", tasksJson);
-        kvTaskClient.put ("history", historyJson);
+        try {
+            kvTaskClient.put ("tasks", tasksJson);
+            kvTaskClient.put ("history", historyJson);
+        } catch (RequestException | IOException | InterruptedException e) {
+            e.printStackTrace ();
+        }
+
     }
 
     //Загрузка с сервера
-    public void loadFromServer (String kvTaskClientKeyApi) {
-        kvTaskClient.setKeyApi (kvTaskClientKeyApi);
-
+    public void loadFromServer () throws IOException, InterruptedException, RequestException {
         String tasksJson = kvTaskClient.load ("tasks");
         String historyJson = kvTaskClient.load ("history");
+        if (!tasksJson.isEmpty ()) {
 
-        ArrayList<Task> tasks = parseJsonToTasksList (tasksJson);
-        ArrayList<Task> history = parseJsonToTasksList (historyJson);
+            ArrayList<Task> tasks = parseJsonToTasksList (tasksJson);
+            ArrayList<Task> history = parseJsonToTasksList (historyJson);
 
-        HistoryManager historyManager = new InMemoryHistoryManager ();
-        for (Task task : tasks) {
-            if (task.getType ().equals (Types.EPIC_TASK)){
-                super.createTask (task);
-                super.searchEpicWithId (task.getIdentifier ()).RemoveAllSubTasks ();
+            HistoryManager historyManager = new InMemoryHistoryManager ();
+            for (Task task : tasks) {
+                if (task.getType ().equals (Types.EPIC_TASK)) {
+                    super.createTask (task);
+                    super.searchEpicWithId (task.getIdentifier ()).RemoveAllSubTasks ();
+                }
             }
-        }
-        tasks.removeAll (super.getEpicTasks ());
-        tasks.forEach (super::createTask);
+            tasks.removeAll (super.getEpicTasks ());
+            tasks.forEach (super::createTask);
 
-        int lastId = 0;
+            int lastId = 0;
 
-        for (Task task : super.tasks) {
-            if (task.getIdentifier () > lastId) {
-                lastId = task.getIdentifier ();
-                super.uniId = lastId;
+            for (Task task : super.tasks) {
+                if (task.getIdentifier () > lastId) {
+                    lastId = task.getIdentifier ();
+                    super.uniId = lastId;
+                }
             }
+
+            history.forEach (historyManager::add);
+
+            setHistoryManager (historyManager);
         }
-
-        history.forEach (historyManager::add);
-
-        setHistoryManager (historyManager);
     }
 
     //Преобразования Json в список Задач

@@ -79,7 +79,6 @@ public class HttpTaskServerTest {
         taskManager.createTask (epic);
         taskManager.createTask (subtask);
         taskManager.createTask (task);
-
     }
 
     @DisplayName("Должен вернуть EpicTask при GET-запросе с id по адресу tasks/epic?id=1")
@@ -266,7 +265,7 @@ public class HttpTaskServerTest {
 
     @DisplayName("Должен вернуть 400 ошибку и описание, если заголовка X-context не было")
     @Test
-    public void shouldReturn400AndErrorInfoIfHeaderXContextNotFound () throws IOException, InterruptedException {
+    public void shouldReturn400AndErrorInfoIfHeaderXContextNotFound () throws IOException, InterruptedException, IllegalStateException {
         URI uri = URI.create (url + "/tasks/task");
         SubTask newSubtask = new SubTask ("New subtask", "", Status.NEW, epic.getIdentifier ());
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString (gson.toJson (newSubtask));
@@ -277,8 +276,8 @@ public class HttpTaskServerTest {
                 .build ();
         HttpResponse<String> response = httpClient.send (request, HttpResponse.BodyHandlers.ofString ());
         JsonObject jsonObject = JsonParser.parseString (response.body ()).getAsJsonObject ();
-        Assertions.assertAll (() -> assertEquals (jsonObject.get ("status").getAsInt (), 400), ()
-                -> assertEquals (jsonObject.get ("message").getAsString (), "Нет заголовка 'X-context'"));
+        Assertions.assertAll (() -> assertEquals (response.statusCode (), 400), ()
+                        -> assertEquals (jsonObject.get ("detailMessage").getAsString (), "Нет заголовка 'X-context'"));
     }
 
     @DisplayName("Должен вернуть 400 ошибку и описание, если происходит ошибка при добавлении")
